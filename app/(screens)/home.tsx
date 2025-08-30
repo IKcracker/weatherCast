@@ -1,28 +1,23 @@
-import { View, FlatList, Image } from 'react-native'
-import { Video, ResizeMode } from 'expo-av';
+import { View, FlatList } from 'react-native'
 import * as Location from 'expo-location';
 import React from 'react'
 import { Text } from '@/components/ui/text'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { toast } from 'sonner-native';
 import { getWeather } from '@/lib/weather';
-import { useAsync } from 'react-async-hook';
-import { UserMenu } from '@/components/user-menu';
-import { ThemeToggle } from '@/components/Theme';
-import { Icon } from '@/components/ui/icon';
-import { weatherIcons } from '@/constants/weatherIcons';
-import { Thermometer, Wind } from 'lucide-react-native';
-import { measure } from 'react-native-reanimated';
 import { getNews } from '@/lib/News';
-import { Link } from 'expo-router';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import NewsCard from '@/components/newsCard';
+import WeatherSummary from '@/components/WeatherSummary';
+import { SkeletonLoading } from '@/components/DataLoading';
+import { useAsync } from 'react-async-hook';
 
 export default function Home() {
   const [location, setLocation] = React.useState<Location.LocationObject | null>(null);
   const [address, setAddress] = React.useState<Location.LocationGeocodedAddress[] | null>(null);
-  const [errorMsg, setErrorMsg] = React.useState(null);
   const [weatherData, setWeatherData] = React.useState<any>(null);
   const [newsData, setNewsData] = React.useState<any>(null);
+  const [newsLoading, setNewsLoading] = React.useState(false);
+  const [newsError, setNewsError] = React.useState<string | null>(null);
 
   React.useEffect(() => {
     async function getCurrentLocation() {
@@ -55,121 +50,74 @@ export default function Home() {
     }
   }, [weather.status, weather.result]);
 
-  const country: string | undefined = address && address[0].isoCountryCode ? address[0].isoCountryCode : undefined;
-  const news = useAsync(
-    React.useCallback(() => {
-      if (country) {
-        return getNews({ country });
-      }
-      return Promise.resolve(null);
-    }, [country]),
-    [country]
-  );
+  const country: string | undefined = address?.[0]?.isoCountryCode || "us"; // fallback to "us"
 
   React.useEffect(() => {
-    if (news.status === 'success' && news.result) {
-      setNewsData(news.result);
+    let isMounted = true;
+    async function fetchNews() {
+      if (!country) return;
+      setNewsLoading(true);
+      setNewsError(null);
+      try {
+        const result = await getNews({ country });
+        console.log("newsData", JSON.stringify(result, null, 2));
+        if (isMounted) setNewsData(result);
+      } catch (e: any) {
+        if (isMounted) setNewsError(e?.message || 'Error fetching news');
+      } finally {
+        if (isMounted) setNewsLoading(false);
+      }
     }
-  }, [news.status, news.result]);
+    fetchNews();
+    return () => { isMounted = false; };
+  }, [country]);
+
+ const articles = newsData?.results || [];
+
+
 
   return (
-    <SafeAreaView className='p-4 flex-1'>
+    <SafeAreaView edges={["top"]} className='p-4 flex-1'>
       
-        {address && weather.status === "loading" ? (
-          <View>
-            <Text className='text-md font-bold'>Fetching Weather for {address[0].name}...</Text>
-          </View>
-        ) : weather.status === "error" ? (
-          <View>
-            <Text className='text-2xl font-bold'>Error fetching weather data</Text>
-            <Text>{String(weather.error)}</Text>
-          </View>
-        ) : (weatherData && address) && (
-          <View className='space-y-2 gap-2'>
-            <View className='flex-row justify-between items-center'>
-              <View className='flex flex-row items-baseline'>
-                <Text className='text-4xl font-semibold'>{(weatherData.main.feels_like - 273.15).toFixed(0)} °C,</Text>
-                <Text className='text-lg'>{address[0].name}</Text>
-              </View>
-              <UserMenu />
-            </View>
-            <View className='flex-row items-center space-x-2 gap-2'>
-              <Icon as={weatherIcons[weatherData.weather[0].icon as keyof typeof weatherIcons]} size={24} />
-              <Text className='text-lg'>{weatherData.weather[0].description}</Text>
-            </View>
-            <View className='flex-row items-center space-x-2 gap-2'>
-              <Icon as={Thermometer} size={24} />
-              <Text>Real feel:</Text>
-              <Text className='font-semibold'>{(weatherData.main.temp - 273.15).toFixed(0)} °C</Text>
-            </View>
-            <View className='flex-row items-center space-x-2 gap-2'>
-              <Icon as={Wind} size={24} />
-              <Text>Wind speed:</Text>
-              <Text className='font-semibold'>{(weatherData.wind.speed * 3.6).toFixed(0)} km/h</Text>
-            </View>
-            <View className='flex-row items-center space-x-2 gap-2'>
-              <Text>Humidity</Text>
-              <Text>{weatherData.main.humidity}%</Text>
-            </View>
-          </View>
-        )}
-      {news.status === "loading" ? (
-        <View className='mt-4'>
-          <Text className='text-md font-bold'>Fetching News...</Text>
+      {/* Weather section */}
+      {address && weather.status === "loading" ? (
+        <View>
+          <SkeletonLoading/>
         </View>
-      ) : news.status === "error" ? (
+      ) : weather.status === "error" ? (
+        <View>
+          <Text className='text-2xl font-bold'>Error fetching weather data</Text>
+          <Text>{String(weather.error)}</Text>
+        </View>
+      ) : (weatherData && address) && (
+        <WeatherSummary address={address} weatherData={weatherData} />
+      )}
+
+      {/* News section */}
+      {newsLoading ? (
+        <View className='mt-4'>
+          <SkeletonLoading/>
+          <SkeletonLoading/>
+          <SkeletonLoading/>
+        </View>
+      ) : newsError ? (
         <View className='mt-4'>
           <Text className='text-2xl font-bold'>Error fetching news data</Text>
-          <Text>{String(news.error)}</Text>
+          <Text>{newsError}</Text>
         </View>
-      ) : (newsData && Array.isArray(newsData.results)) && (
-        <View className='space-y-2 gap-2 mt-6 flex-1'>
-          <Text className='text-2xl font-bold mb-2'>Top Headlines</Text>
+      ) : Array.isArray(articles) && articles.length > 0 && (
+        <View className="flex-1 mt-6">
+          <Text className="text-2xl font-bold mb-2">Top Headlines</Text>
           <FlatList
-            data={newsData.results}
+            data={articles}
             keyExtractor={(item, index) => item.link || item.title || String(index)}
-            renderItem={({ item }) => (
-              <View className='space-y-1 bg-slate-50 dark:bg-gray-950 mb-4'>
-                {item.video_url ? (
-                  <Video
-                    source={{ uri: item.video_url }}
-                    style={{ width: '100%', height: 180, borderRadius: 8, marginBottom: 8 }}
-                    useNativeControls
-                    resizeMode={ResizeMode.COVER}
-                    isLooping
-                  />
-                ) : item.image_url ? (
-                  <Image
-                    source={{ uri: item.image_url }}
-                    style={{ width: '100%', height: 180, borderRadius: 8, marginBottom: 8 }}
-                    resizeMode="cover"
-                  />
-                ) : null}
-                <Text className='text-lg font-bold'>{item.title}</Text>
-                {item.description && (
-                  <Text className='opacity-80 text-justify'>
-                    {item.description.length > 120
-                      ? item.description.slice(0, 120) + '...'
-                      : item.description}
-                  </Text>
-                )}
-                <View className='flex gap-2 mt-2 items-center flex-row'>
-                  <Avatar alt="Zach Nugent's Avatar">
-                  <AvatarImage source={{ uri: item.source_icon }} />
-                  <AvatarFallback>
-                    <Text>SC</Text>
-                  </AvatarFallback>
-                </Avatar>
-                  {item.source_url ? (
-                    <Link href={item.source_url}><Text className='font-medium underline text-red-500'>{item.source_id}</Text></Link>
-                  ) : null}
-              </View>
-              </View>
-             
-            )}
+            renderItem={({ item }) => <NewsCard item={item} />}
             showsVerticalScrollIndicator={false}
             refreshing={false}
+            style={{ flex: 1 }}
+            contentContainerStyle={{ paddingBottom: 20 }}
           />
+
         </View>
       )}
     </SafeAreaView>

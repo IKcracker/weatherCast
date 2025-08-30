@@ -9,7 +9,7 @@ export function ThemeToggle() {
 
   return (
     <Button onPress={toggleColorScheme} size="icon" variant="ghost" className="rounded-full">
-      <Icon as={THEME_ICONS[colorScheme ?? 'light']} className="size-6" />
+      <Icon as={THEME_ICONS[colorScheme ?? 'light']} className="size-8" />
     </Button>
   );
 }
