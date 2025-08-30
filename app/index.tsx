@@ -1,3 +1,4 @@
+import { ThemeToggle } from '@/components/Theme';
 import { Button } from '@/components/ui/button';
 import { Icon } from '@/components/ui/icon';
 import { Text } from '@/components/ui/text';
@@ -10,15 +11,12 @@ import * as React from 'react';
 import { Image, type ImageStyle, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
+
 const LOGO = {
   dark: require('@/assets/images/dark-logo.png'),
   light: require('@/assets/images/light-logo.png'),
 };
 
-const CLERK_LOGO = {
-  light: require('@/assets/images/clerk-logo-light.png'),
-  dark: require('@/assets/images/clerk-logo-dark.png'),
-};
 
 const LOGO_STYLE: ImageStyle = {
   height: 36,
@@ -28,7 +26,7 @@ const LOGO_STYLE: ImageStyle = {
 const SCREEN_OPTIONS = {
   header: () => (
     <View className="top-safe absolute left-0 right-0 flex-row justify-between px-4 py-2 web:mx-2">
-      <ThemeToggle />
+      <ThemeToggle/>
       <UserMenu />
     </View>
   ),
@@ -52,17 +50,6 @@ export default function Screen() {
   );
 }
 
-const THEME_ICONS = {
-  light: SunIcon,
-  dark: MoonStarIcon,
-};
 
-function ThemeToggle() {
-  const { colorScheme, toggleColorScheme } = useColorScheme();
 
-  return (
-    <Button onPress={toggleColorScheme} size="icon" variant="ghost" className="rounded-full">
-      <Icon as={THEME_ICONS[colorScheme ?? 'light']} className="size-6" />
-    </Button>
-  );
-}
+

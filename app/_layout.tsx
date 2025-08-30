@@ -8,9 +8,10 @@ import { PortalHost } from '@rn-primitives/portal';
 import { Stack } from 'expo-router';
 import * as SplashScreen from 'expo-splash-screen';
 import { StatusBar } from 'expo-status-bar';
+import {Toaster} from "sonner-native"
 import { useColorScheme } from 'nativewind';
 import * as React from 'react';
-
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 export {
   // Catch any errors thrown by the Layout component.
   ErrorBoundary,
@@ -20,13 +21,15 @@ export default function RootLayout() {
   const { colorScheme } = useColorScheme();
 
   return (
+    <GestureHandlerRootView>
     <ClerkProvider tokenCache={tokenCache}>
       <ThemeProvider value={NAV_THEME[colorScheme ?? 'light']}>
-    
         <Routes />
         <PortalHost />
+        <Toaster/>
       </ThemeProvider>
     </ClerkProvider>
+    </GestureHandlerRootView>
   );
 }
 
@@ -58,7 +61,7 @@ function Routes() {
 
       {/* Screens only shown when the user IS signed in */}
       <Stack.Protected guard={isSignedIn}>
-        
+        <Stack.Screen name="(screens)/home" options={{ headerShown: false }} />
       </Stack.Protected>
 
       {/* Screens outside the guards are accessible to everyone (e.g. not found) */}

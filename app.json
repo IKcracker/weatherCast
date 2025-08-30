@@ -1,10 +1,10 @@
 {
   "expo": {
-    "name": ".",
-    "slug": ".",
+    "name": "weatherCast",
+    "slug": "weatherCast",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/light-logo.png",
     "scheme": ".",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
@@ -34,7 +34,11 @@
     "plugins": [
       "expo-router",
       "expo-secure-store",
-      "expo-web-browser"
+      "expo-web-browser",
+       ["expo-location",
+        {
+          "locationAlwaysAndWhenInUsePermission": "Allow $(weatherCast) to use your location."
+        }]
     ],
     "experiments": {
       "typedRoutes": true
