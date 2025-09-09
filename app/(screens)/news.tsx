@@ -1,4 +1,4 @@
-import { FlatList, View,  } from 'react-native'
+import { FlatList, View } from 'react-native'
 import React from 'react'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { Text } from '@/components/ui/text'
@@ -7,88 +7,102 @@ import { UserMenu } from '@/components/user-menu'
 import NewsCard from '@/components/newsCard'
 import * as Location from 'expo-location';
 import { toast } from 'sonner-native'
-import { useAsync } from 'react-async-hook'
-import { getNews } from '@/lib/News'
+import { getNewsByCountry } from '@/services/newsService' 
 import { SkeletonLoading } from '@/components/DataLoading'
-import { Input } from '@/components/ui/input'
+
 export default function News() {
-const [newsData, setNewsData] = React.useState<any>(null);
-const [address, setAddress] = React.useState<Location.LocationGeocodedAddress[] | null>(null);
-    React.useEffect(() => {
-      async function getCurrentLocation() {
-        let { status } = await Location.requestForegroundPermissionsAsync();
-        if (status !== 'granted') {
-          toast.error('Permission to access location was denied');
-          return;
-        }
-        let location = await Location.getCurrentPositionAsync({});
-        const address = await Location.reverseGeocodeAsync(location.coords);
-        setAddress(address);
-      
-      }
-      getCurrentLocation();
-    }, []);
+  const [newsData, setNewsData] = React.useState<any>(null);
+  const [address, setAddress] = React.useState<Location.LocationGeocodedAddress[] | null>(null);
+  const [loading, setLoading] = React.useState(true);
+
   const country = React.useMemo(() => {
-    if (address && address[0] && address[0].isoCountryCode) {
+    if (address && address[0]?.isoCountryCode) {
       return address[0].isoCountryCode;
     }
     return undefined;
   }, [address]);
 
+  // Fetch location once
   React.useEffect(() => {
-    let isMounted = true;
-    async function fetchNews() {
-      if (country) {
-        const result = await getNews({ country });
-        if (isMounted) setNewsData(result);
+    const getCurrentLocation = async () => {
+      try {
+        let { status } = await Location.getForegroundPermissionsAsync();
+        if (status !== 'granted') {
+          toast.error('Permission to access location was denied');
+          setLoading(false);
+          return;
+        }
+
+        let location = await Location.getCurrentPositionAsync({});
+        const addr = await Location.reverseGeocodeAsync(location.coords);
+        setAddress(addr);
+      } catch (error) {
+        
+        setLoading(false);
       }
-    }
-    fetchNews();
+    };
+
+    getCurrentLocation();
+  }, []);
+
+  // Fetch news whenever country is set
+  React.useEffect(() => {
+    if (!country) return;
+
+    let isMounted = true;
+
+    const fetchNewsData = async () => {
+      setLoading(true);
+      try {
+        const result = await getNewsByCountry(country);
+        if (isMounted) setNewsData(result);
+      } catch (error) {
+        toast.error('Error fetching news');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchNewsData();
     return () => { isMounted = false; };
   }, [country]);
-  console.log(newsData);
+
   return (
-    <SafeAreaView edges={["top"]} className='p-4 flex-1'>
-    <View className='flex flex-row justify-between items-center mb-4'>
-      <ThemeToggle/>
-      <Text className='text-lg font-bold'>weatherCast</Text>
-      <UserMenu/>
-    </View>
+    <SafeAreaView edges={["top"]} className="p-4 flex-1">
+      <View className="flex flex-row justify-between items-center mb-4">
+        <ThemeToggle />
+        <Text className="text-lg font-bold">weatherCast</Text>
+        <UserMenu />
+      </View>
 
- 
-<View>
-    <Input
-      keyboardType="default"
-      autoComplete="off"
-      placeholder="Search news..."
-      id='search'
-    />
+      {loading && !newsData ? (
+        <View className="mt-4">
+          <SkeletonLoading/>
+          <SkeletonLoading/>
+          <SkeletonLoading/>
+        </View>
+      ) : (
+        Array.isArray(newsData) && newsData.length > 0 && (
+          <View className="flex-1 mt-6">
+            <Text className="text-2xl font-bold mb-2">Latest News</Text>
+            <FlatList
+              data={newsData}
+              keyExtractor={(item, index) => {
+              
+                const safeSource = item.source_url ?? "unknown-source";
+                const safeTitle = item.title?.slice(0, 20) ?? "untitled";
+                return `${safeSource}-${safeTitle}-${index}`;
+              }}
+              renderItem={({ item }) => <NewsCard item={item} />}
+              showsVerticalScrollIndicator={false}
+              refreshing={false}
+              style={{ flex: 1 }}
+              contentContainerStyle={{ paddingBottom: 10 }}
+            />
 
-    </View>
-    <View>
-             {!newsData ? (
-               <View className='mt-4'>
-                 <SkeletonLoading/>
-                 <SkeletonLoading/>
-                 <SkeletonLoading/>
-               </View>
-             ) : (newsData && Array.isArray(newsData.results)) && (
-               <View className='space-y-2 gap-2 mt-6 flex-1'>
-                 <Text className='text-2xl font-bold mb-2'>Top Headlines</Text>
-                <FlatList
-                    data={newsData.articles || newsData.results || []}
-                    keyExtractor={(_, index) => String(index)}
-                    renderItem={({ item }) => <NewsCard item={item} />}
-                    showsVerticalScrollIndicator={false}
-                    refreshing={false}
-                    contentContainerStyle={{ paddingBottom: 20 }}
-                    style={{ flex: 1 }}
-                    />
-
-               </View>
-             )}
-    </View>
+          </View>
+        )
+      )}
     </SafeAreaView>
-
-  )
+  );
 }

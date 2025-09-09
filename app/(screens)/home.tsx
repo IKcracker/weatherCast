@@ -5,7 +5,7 @@ import { Text } from '@/components/ui/text'
 import { SafeAreaView } from 'react-native-safe-area-context'
 import { toast } from 'sonner-native';
 import { getWeather } from '@/lib/weather';
-import { getNews } from '@/lib/News';
+import { getNewsByCountry } from '@/services/newsService'; 
 import NewsCard from '@/components/newsCard';
 import WeatherSummary from '@/components/WeatherSummary';
 import { SkeletonLoading } from '@/components/DataLoading';
@@ -50,7 +50,8 @@ export default function Home() {
     }
   }, [weather.status, weather.result]);
 
-  const country: string | undefined = address?.[0]?.isoCountryCode || "us"; // fallback to "us"
+  const country: string | undefined = address?.[0]?.isoCountryCode || "ZA"; 
+  console.log("Determined country code:", country);
 
   React.useEffect(() => {
     let isMounted = true;
@@ -59,8 +60,8 @@ export default function Home() {
       setNewsLoading(true);
       setNewsError(null);
       try {
-        const result = await getNews({ country });
-        console.log("newsData", JSON.stringify(result, null, 2));
+        const result = await getNewsByCountry(country);
+        
         if (isMounted) setNewsData(result);
       } catch (e: any) {
         if (isMounted) setNewsError(e?.message || 'Error fetching news');
@@ -105,21 +106,26 @@ export default function Home() {
           <Text className='text-2xl font-bold'>Error fetching news data</Text>
           <Text>{newsError}</Text>
         </View>
-      ) : Array.isArray(articles) && articles.length > 0 && (
-        <View className="flex-1 mt-6">
-          <Text className="text-2xl font-bold mb-2">Top Headlines</Text>
-          <FlatList
-            data={articles}
-            keyExtractor={(item, index) => item.link || item.title || String(index)}
-            renderItem={({ item }) => <NewsCard item={item} />}
-            showsVerticalScrollIndicator={false}
-            refreshing={false}
-            style={{ flex: 1 }}
-            contentContainerStyle={{ paddingBottom: 20 }}
-          />
+      ) :  Array.isArray(newsData) && newsData.length > 0 && (
+                <View className="flex-1 mt-6">
+                  <Text className="text-2xl font-bold mb-2">Latest News</Text>
+                 <FlatList
+                    data={newsData}
+                    keyExtractor={(item, index) => {
+                      // Make sure it's always unique
+                      const safeSource = item.source_url ?? "unknown-source";
+                      const safeTitle = item.title?.slice(0, 20) ?? "untitled"; // trim title to avoid long keys
+                      return `${safeSource}-${safeTitle}-${index}`;
+                    }}
+                    renderItem={({ item }) => <NewsCard item={item} />}
+                    showsVerticalScrollIndicator={false}
+                    refreshing={false}
+                    style={{ flex: 1 }}
+                    contentContainerStyle={{ paddingBottom: 10 }}
+                  />
 
-        </View>
-      )}
+                </View>
+              )}
     </SafeAreaView>
   )
 }

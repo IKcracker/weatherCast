@@ -3,7 +3,7 @@ import React from 'react'
 import { Text } from './ui/text'
 import { UserMenu } from './user-menu'
 import { Icon } from './ui/icon'
-import { weatherIcons } from '@/constants/weatherIcons'
+import { weatherIcons } from '@/types/weatherIconTypes' 
 import { Thermometer, Wind } from 'lucide-react-native'
 
 export default function WeatherSummary({ address , weatherData}: { address:any , weatherData:any}) {
