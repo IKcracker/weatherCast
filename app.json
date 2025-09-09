@@ -13,18 +13,25 @@
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.moropane.weatherCast",
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "edgeToEdgeEnabled": true,
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "permissions": [
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION"
+      ],
+      "package": "com.moropane.weatherCast"
     },
     "web": {
       "bundler": "metro",
@@ -35,13 +42,24 @@
       "expo-router",
       "expo-secure-store",
       "expo-web-browser",
-       ["expo-location",
+      [
+        "expo-location",
         {
           "locationAlwaysAndWhenInUsePermission": "Allow $(weatherCast) to use your location."
-        }]
+        }
+      ]
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "EXPO_PUBLIC_CLERK_PUBLISHABLE_KEY": "pk_test_3D1E3C4A1F2B4D6E8F7A9B0C1D2E3F4G5H6I7J8K9L0M1N2O3P4Q5R6S7T8U9V0W",
+      "EXPO_PUBLIC_OPENWEATHER_API_KEY": "your_openweather_api_key_here",
+      "EXPO_PUBLIC_NEWS_API_KEY": "pub_3c0ef66d361c412195483d98cda8f900",
+      "router": {},
+      "eas": {
+        "projectId": "185dc278-6432-4ed3-9ce1-4a2c506bb675"
+      }
     }
   }
 }
