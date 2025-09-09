@@ -1,11 +1,11 @@
-import { View, FlatList } from 'react-native'
+import { View, FlatList } from 'react-native';
 import * as Location from 'expo-location';
-import React from 'react'
-import { Text } from '@/components/ui/text'
-import { SafeAreaView } from 'react-native-safe-area-context'
+import React from 'react';
+import { Text } from '@/components/ui/text';
+import { SafeAreaView } from 'react-native-safe-area-context';
 import { toast } from 'sonner-native';
 import { getWeather } from '@/lib/weather';
-import { getNewsByCountry } from '@/services/newsService'; 
+import { getNewsByCountry, getTrendingNews } from '@/services/newsService';
 import NewsCard from '@/components/newsCard';
 import WeatherSummary from '@/components/WeatherSummary';
 import { SkeletonLoading } from '@/components/DataLoading';
@@ -50,8 +50,7 @@ export default function Home() {
     }
   }, [weather.status, weather.result]);
 
-  const country: string | undefined = address?.[0]?.isoCountryCode || "ZA"; 
-  console.log("Determined country code:", country);
+  const country: string | undefined = address?.[0]?.isoCountryCode || 'ZA';
 
   React.useEffect(() => {
     let isMounted = true;
@@ -60,8 +59,8 @@ export default function Home() {
       setNewsLoading(true);
       setNewsError(null);
       try {
-        const result = await getNewsByCountry(country);
-        
+        const result = await getTrendingNews();
+
         if (isMounted) setNewsData(result);
       } catch (e: any) {
         if (isMounted) setNewsError(e?.message || 'Error fetching news');
@@ -70,62 +69,63 @@ export default function Home() {
       }
     }
     fetchNews();
-    return () => { isMounted = false; };
+    return () => {
+      isMounted = false;
+    };
   }, [country]);
 
- const articles = newsData?.results || [];
-
-
+  const articles = newsData?.results || [];
 
   return (
-    <SafeAreaView edges={["top"]} className='p-4 flex-1'>
-      
+    <SafeAreaView edges={['top']} className="flex-1 p-4">
       {/* Weather section */}
-      {address && weather.status === "loading" ? (
+      {address && weather.status === 'loading' ? (
         <View>
-          <SkeletonLoading/>
+          <SkeletonLoading />
         </View>
-      ) : weather.status === "error" ? (
+      ) : weather.status === 'error' ? (
         <View>
-          <Text className='text-2xl font-bold'>Error fetching weather data</Text>
+          <Text className="text-2xl font-bold">Error fetching weather data</Text>
           <Text>{String(weather.error)}</Text>
         </View>
-      ) : (weatherData && address) && (
-        <WeatherSummary address={address} weatherData={weatherData} />
+      ) : (
+        weatherData && address && <WeatherSummary address={address} weatherData={weatherData} />
       )}
 
       {/* News section */}
       {newsLoading ? (
-        <View className='mt-4'>
-          <SkeletonLoading/>
-          <SkeletonLoading/>
-          <SkeletonLoading/>
+        <View className="mt-4">
+          <SkeletonLoading />
+          <SkeletonLoading />
+          <SkeletonLoading />
         </View>
       ) : newsError ? (
-        <View className='mt-4'>
-          <Text className='text-2xl font-bold'>Error fetching news data</Text>
+        <View className="mt-4">
+          <Text className="text-2xl font-bold">Error fetching news data</Text>
           <Text>{newsError}</Text>
         </View>
-      ) :  Array.isArray(newsData) && newsData.length > 0 && (
-                <View className="flex-1 mt-6">
-                  <Text className="text-2xl font-bold mb-2">Latest News</Text>
-                 <FlatList
-                    data={newsData}
-                    keyExtractor={(item, index) => {
-                      // Make sure it's always unique
-                      const safeSource = item.source_url ?? "unknown-source";
-                      const safeTitle = item.title?.slice(0, 20) ?? "untitled"; // trim title to avoid long keys
-                      return `${safeSource}-${safeTitle}-${index}`;
-                    }}
-                    renderItem={({ item }) => <NewsCard item={item} />}
-                    showsVerticalScrollIndicator={false}
-                    refreshing={false}
-                    style={{ flex: 1 }}
-                    contentContainerStyle={{ paddingBottom: 10 }}
-                  />
-
-                </View>
-              )}
+      ) : (
+        Array.isArray(newsData) &&
+        newsData.length > 0 && (
+          <View className="mt-6 flex-1">
+            <Text className="mb-2 text-2xl font-bold">Latest News</Text>
+            <FlatList
+              data={newsData}
+              keyExtractor={(item, index) => {
+                // Make sure it's always unique
+                const safeSource = item.source_url ?? 'unknown-source';
+                const safeTitle = item.title?.slice(0, 20) ?? 'untitled'; // trim title to avoid long keys
+                return `${safeSource}-${safeTitle}-${index}`;
+              }}
+              renderItem={({ item }) => <NewsCard item={item} />}
+              showsVerticalScrollIndicator={false}
+              refreshing={false}
+              style={{ flex: 1 }}
+              contentContainerStyle={{ paddingBottom: 10 }}
+            />
+          </View>
+        )
+      )}
     </SafeAreaView>
-  )
+  );
 }

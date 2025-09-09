@@ -19,7 +19,7 @@ export interface NewsApiArticle {
   category?: string[];
   language?: string | null;
   ai_tag?: string | null;
-  sentiment?: "positive" | "negative" | "neutral";
+  sentiment?: 'positive' | 'negative' | 'neutral';
   sentiment_stats?: Record<string, any>; // e.g. counts of sentiment
   ai_region?: string | null;
   ai_org?: string | null;
@@ -42,6 +42,26 @@ export interface NewsItem {
   video_url?: Nullable<string>;
   source_id?: Nullable<string>;
   source_icon?: Nullable<string>;
+  content?: string | null;
   source_url?: Nullable<string>;
   publishedAt?: Nullable<string>;
 }
+
+export enum newsCategory {
+  general = 'trending',
+  business = 'business',
+  entertainment = 'entertainment',
+  health = 'health',
+  science = 'science',
+  sports = 'sports',
+  technology = 'technology',
+}
+export const allNewsCategories = [
+  newsCategory.general,
+  newsCategory.business,
+  newsCategory.entertainment,
+  newsCategory.health,
+  newsCategory.science,
+  newsCategory.sports,
+  newsCategory.technology,
+];

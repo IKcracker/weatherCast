@@ -6,10 +6,10 @@ import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 import { Link } from 'expo-router';
 import { NewsItem } from '@/types/newsTypes'; // <- put schema in a types folder
 
-export default function NewsCard({ item }: { item: NewsItem }) {
-  console.log('NewsCard item:', item);
+export default React.memo(function NewsCard({ item }: { item: NewsItem }) {
+  console.log(item.content);
   return (
-    <View className="space-y-1 bg-slate-50 dark:bg-gray-950 mb-4 rounded-lg ">
+    <View className="mb-4 space-y-1 bg-gray-50 p-1 dark:bg-gray-950">
       {item.video_url ? (
         <Video
           source={{ uri: item.video_url }}
@@ -21,7 +21,7 @@ export default function NewsCard({ item }: { item: NewsItem }) {
       ) : item.image_url ? (
         <Image
           source={{ uri: item.image_url }}
-          style={{ width: '100%', height: 240}}
+          style={{ width: '100%', height: 240 }}
           resizeMode="cover"
         />
       ) : null}
@@ -29,32 +29,30 @@ export default function NewsCard({ item }: { item: NewsItem }) {
       <Text className="text-lg font-semibold">{item.title}</Text>
 
       {item.description && (
-        <Text className="opacity-80 text-justify">
+        <Text className="text-justify opacity-80">
           {item.description.length > 120
             ? item.description.slice(0, 120) + '...'
             : item.description}
         </Text>
       )}
 
-      <View className="flex gap-2 mt-1 items-center flex-row">
+      <View className="mt-1 flex flex-row items-center gap-2">
         <Avatar alt="Source Avatar">
-            {item?.source_icon ? (
-            <AvatarImage source={{ uri: item?.source_icon}} />
-            ) : (
+          {item?.source_icon ? (
+            <AvatarImage source={{ uri: item?.source_icon }} />
+          ) : (
             <AvatarFallback>
               <Text>SC</Text>
             </AvatarFallback>
-            )}
+          )}
         </Avatar>
 
         {item?.source_url ? (
           <Link href={item?.source_url as any}>
-            <Text className="font-medium underline text-red-500">
-              {item.source_id ?? 'Source'}
-            </Text>
+            <Text className="font-medium text-red-500 underline">{item.source_id ?? 'Source'}</Text>
           </Link>
         ) : null}
       </View>
     </View>
   );
-}
+});
