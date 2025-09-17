@@ -97,15 +97,15 @@ export default function Settings() {
         </View>
 
         {/* Notifications */}
-        <View className="flex-row items-center justify-between rounded-2xl bg-gray-100 px-4 py-3 dark:bg-gray-800">
+        <View className="mt-4 flex-row items-center justify-between rounded-2xl bg-gray-100 px-4 py-3 dark:bg-gray-800">
           <Text className="text-base font-semibold text-black dark:text-white">Notifications</Text>
           <Switch value={notifications} onValueChange={setNotifications} />
         </View>
       </View>
 
       {/* Sign Out */}
-      <Button onPress={() => signOut()} className="mt-12 rounded-2xl bg-red-500 py-4">
-        <Text className="text-center text-lg font-semibold text-white">Sign Out</Text>
+      <Button onPress={() => signOut()} className="mt-12 rounded-full">
+        <Text className="text-center text-lg font-semibold">Sign Out</Text>
       </Button>
     </SafeAreaView>
   );
