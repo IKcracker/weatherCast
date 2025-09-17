@@ -1,4 +1,4 @@
-import { View, FlatList } from 'react-native';
+import { View } from 'react-native';
 import * as Location from 'expo-location';
 import React from 'react';
 import { Text } from '@/components/ui/text';
@@ -10,7 +10,7 @@ import NewsCard from '@/components/newsCard';
 import WeatherSummary from '@/components/WeatherSummary';
 import { SkeletonLoading } from '@/components/DataLoading';
 import { useAsync } from 'react-async-hook';
-
+import { LegendList } from '@legendapp/list';
 export default function Home() {
   const [location, setLocation] = React.useState<Location.LocationObject | null>(null);
   const [address, setAddress] = React.useState<Location.LocationGeocodedAddress[] | null>(null);
@@ -109,7 +109,7 @@ export default function Home() {
         newsData.length > 0 && (
           <View className="mt-6 flex-1">
             <Text className="mb-2 text-2xl font-bold">Latest News</Text>
-            <FlatList
+            <LegendList
               data={newsData}
               keyExtractor={(item, index) => {
                 // Make sure it's always unique

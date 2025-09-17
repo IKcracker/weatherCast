@@ -1,8 +1,8 @@
 import { TouchableOpacity, View } from 'react-native';
 import React from 'react';
-import { FlatList } from 'react-native-gesture-handler';
 import { Text } from './ui/text';
 import { newsCategory } from '@/types/newsTypes';
+import { LegendList } from '@legendapp/list';
 
 export default React.memo(function Categories({
   categories,
@@ -13,7 +13,7 @@ export default React.memo(function Categories({
 }) {
   return (
     <View>
-      <FlatList
+      <LegendList
         data={categories}
         renderItem={({ item }) => {
           return (

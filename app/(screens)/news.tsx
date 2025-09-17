@@ -1,4 +1,4 @@
-import { FlatList, View } from 'react-native';
+import { View } from 'react-native';
 import React from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Text } from '@/components/ui/text';
@@ -12,7 +12,7 @@ import { SkeletonLoading } from '@/components/DataLoading';
 import Categories from '@/components/newsCategory';
 import { allNewsCategories, newsCategory, NewsItem } from '@/types/newsTypes';
 import Search from '@/components/search';
-
+import { LegendList } from '@legendapp/list';
 export default function News() {
   const [newsData, setNewsData] = React.useState<NewsItem[] | null>(null);
   const [address, setAddress] = React.useState<Location.LocationGeocodedAddress[] | null>(null);
@@ -101,7 +101,7 @@ export default function News() {
       ) : Array.isArray(newsData) && newsData.length > 0 ? (
         <View className="mt-6 flex-1">
           <Text className="mb-2 text-2xl font-bold">Latest {category.toUpperCase()} News</Text>
-          <FlatList
+          <LegendList
             data={newsData}
             keyExtractor={(item, index) => {
               const safeSource = item.source_url ?? 'unknown-source';

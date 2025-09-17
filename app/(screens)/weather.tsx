@@ -1,4 +1,4 @@
-import { FlatList, View } from 'react-native';
+import { View } from 'react-native';
 import React from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Text } from '@/components/ui/text';
@@ -26,7 +26,7 @@ import { toast } from 'sonner-native';
 import { useAsync } from 'react-async-hook';
 import { getForecast, getWeather } from '@/lib/weather';
 import { SkeletonLoading } from '@/components/DataLoading';
-
+import { LegendList } from '@legendapp/list';
 import type { LucideIcon } from 'lucide-react-native';
 
 const WeatherIcons: Record<string, LucideIcon> = {
@@ -172,7 +172,7 @@ export default function Weather() {
           <SkeletonLoading />
         </View>
       ) : (
-        <FlatList
+        <LegendList
           data={(() => {
             if (!forecast.result?.list) return [];
             const now = new Date();
